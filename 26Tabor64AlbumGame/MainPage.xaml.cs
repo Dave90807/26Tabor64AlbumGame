@@ -27,30 +27,15 @@ namespace _26Tabor64AlbumGame
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     /// 
-
-
     public sealed partial class MainPage : Page
     {
-    private ObservableCollection<Song> Songs;
+        private ObservableCollection<Song> Songs;
+        private ObservableCollection<StorageFile> AllSongs;
+
         public MainPage()
         {
             this.InitializeComponent();
-        }
-
-        private async void Button_Click(object sender, RoutedEventArgs e)
-        {
-            // 1. Get access to Music Library
-            StorageFolder folder = KnownFolders.MusicLibrary;
-            var allSongs = new ObservableCollection<StorageFile>();
-            await RetrieveFilesInFolders(allSongs, folder);
-
-            // 2. Choose random songs
-            var randomSongs = await PickRandomSongs(allSongs);
-
-            // 3. Get metadata from selected songs.
-            await PopulateSongList(randomSongs);
-
-
+            Songs = new ObservableCollection<Song>();
         }
 
         private async Task RetrieveFilesInFolders(
@@ -63,9 +48,9 @@ namespace _26Tabor64AlbumGame
                     list.Add(item);
             }
 
-            foreach (var item in await parent.GetFoldersAsync())
+        foreach (var item in await parent.GetFoldersAsync())
             {
-                await RetrieveFilesInFolders(list, item);
+                 await RetrieveFilesInFolders(list, item);
             }
         }
 
@@ -126,6 +111,52 @@ namespace _26Tabor64AlbumGame
                 Songs.Add(song);
                 id++;
             }
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SongGridView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+
+        }
+
+        private void PlayAgainButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async Task<ObservableCollection<StorageFile>> SetupMusicList()
+        {
+        //  Get access to Music Library
+        StorageFolder folder = KnownFolders.MusicLibrary;
+        var allSongs = new ObservableCollection<StorageFile>();
+        await RetrieveFilesInFolders(allSongs, folder);
+        return allSongs;
+        }
+
+        private async Task PrepareNewGame()
+        {
+        Songs.Clear();
+        // Choose random songs from library
+            var randomSongs = await PickRandomSongs(AllSongs);
+
+        //  Get metadata from selected songs.
+            await PopulateSongList(randomSongs);
+
+        // State management
+        }
+
+        private async void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartupProgressRing.IsActive = true;
+
+            AllSongs = await SetupMusicList();
+            await PrepareNewGame();
+
+            StartupProgressRing.IsActive = false;
         }
     }
 }
